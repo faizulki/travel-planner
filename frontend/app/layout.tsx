@@ -14,6 +14,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Hotel Recommendations",
   description: "Find your perfect hotel stay",
+  other: {
+    "fo-verify": "d9a7599f-c65c-4f9b-b46a-2e3be7e3e7c6",
+  },
 };
 
 export default function RootLayout({

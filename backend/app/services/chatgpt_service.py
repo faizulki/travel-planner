@@ -54,6 +54,10 @@ Return JSON only:
 
 Notes: Calculate relative dates. Budget defaults to EUR. Return null if unknown."""
 
+        if not self.client:
+            logger.warning("OpenAI API key is not configured. Using fallback parameter extraction.")
+            return self._fallback_extract_parameters(user_demand)
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
