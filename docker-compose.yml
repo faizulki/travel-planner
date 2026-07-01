@@ -38,11 +38,12 @@ services:
     depends_on:
       - backend
 
+  # Internal router: not published to the host; only Caddy talks to it.
   gateway:
     image: nginx:1.27-alpine
     restart: unless-stopped
-    ports:
-      - "${GATEWAY_PORT:-80}:80"
+    expose:
+      - "80"
     volumes:
       - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
@@ -50,5 +51,21 @@ services:
       - admin
       - backend
 
+  # TLS terminator: automatic Let's Encrypt certs + HTTP->HTTPS redirect.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - gateway
+
 volumes:
   backend-data:
+  caddy-data:
+  caddy-config:

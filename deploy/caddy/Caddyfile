@@ -1,0 +1,11 @@
+# Automatic HTTPS via Let's Encrypt for the site below.
+# Caddy obtains + renews certs and redirects HTTP -> HTTPS automatically.
+# (Optional) set an email for expiry/security notices:
+# {
+#     email you@example.com
+# }
+
+travelplannerbro.com, www.travelplannerbro.com {
+	encode gzip
+	reverse_proxy gateway:80
+}
