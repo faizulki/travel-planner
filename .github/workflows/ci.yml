@@ -126,17 +126,24 @@ jobs:
           git fetch --prune origin main
           git reset --hard "$SHA"
           docker compose up -d --build --remove-orphans
+          # nginx resolves upstream container IPs only at startup; recreated
+          # containers get new IPs, so restart the gateway to pick them up.
+          docker compose restart gateway
           docker image prune -f
           docker compose ps
           REMOTE
 
       - name: Health check
+        # Check the API *and* both Next.js apps through the public URL.
         run: |
-          for i in $(seq 1 20); do
-            if curl -fsS https://travelplannerbro.com/health; then
-              echo; echo "Healthy"; exit 0
-            fi
-            sleep 6
-          done
-          echo "Site did not become healthy after deploy" >&2
-          exit 1
+          check() {
+            for i in $(seq 1 20); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -L "https://travelplannerbro.com$1")
+              if [ "$code" = "200" ]; then echo "$1 -> 200"; return 0; fi
+              echo "$1 -> $code (attempt $i)"; sleep 6
+            done
+            echo "::error::$1 did not return 200 after deploy"; return 1
+          }
+          check /health
+          check /
+          check /admin
