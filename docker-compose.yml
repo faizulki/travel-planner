@@ -10,6 +10,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       DEBUG: ${DEBUG:-false}
+      STAY22_AID: ${STAY22_AID:-travelplannerbro}
+      STAY22_CAMPAIGN: ${STAY22_CAMPAIGN:-travelplanner_chat}
+      STAY22_MAP_CAMPAIGN: ${STAY22_MAP_CAMPAIGN:-travelplanner_map}
+      STAY22_API_KEY: ${STAY22_API_KEY:-}
     volumes:
       - backend-data:/app/data
     expose:

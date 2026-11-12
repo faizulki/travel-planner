@@ -12,6 +12,7 @@ from app.services.chatgpt_service import ChatGPTService
 from app.services.booking_service import BookingService
 from app.database import get_db
 from app.crud import hotel as hotel_crud
+from app.utils.stay22 import build_stay22_link, build_stay22_map_url
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,8 @@ async def recommend_hotels(
                 extracted_parameters=search_params,
                 matched_hotels=[],
                 total_results=0,
-                message="No hotels found matching your criteria."
+                message="No hotels found matching your criteria.",
+                stay22_map_url=build_stay22_map_url(search_params),
             )
         
         logger.info(f"Found {len(hotels)} hotels from Booking.com API")
@@ -141,7 +143,8 @@ async def recommend_hotels(
                     amenities=hotel_data.get("amenities", []),
                     description=hotel_data.get("description"),
                     images=hotel_data.get("images", []),
-                    url=hotel_data.get("url"),
+                    # Stay22 affiliate link when configured, else the provider's own URL
+                    url=build_stay22_link(hotel_data, search_params) or hotel_data.get("url"),
                     raw_data=hotel_data  # Full booking.com API response as JSON
                 )
                 matched_hotels.append(hotel_info)
@@ -153,7 +156,8 @@ async def recommend_hotels(
             extracted_parameters=search_params,
             matched_hotels=matched_hotels,
             total_results=len(matched_hotels),
-            message=f"Found {len(matched_hotels)} hotels matching your preferences."
+            message=f"Found {len(matched_hotels)} hotels matching your preferences.",
+            stay22_map_url=build_stay22_map_url(search_params),
         )
         
     except ValueError as e:
