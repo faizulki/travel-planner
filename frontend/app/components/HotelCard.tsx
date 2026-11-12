@@ -61,7 +61,7 @@ export default function HotelCard({ hotel }: HotelCardProps) {
             <a
               href={hotel.bookingUrl}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="sponsored noopener noreferrer"
               className="text-xl font-bold transition-all line-clamp-2 flex-1 hover:underline cursor-pointer"
               style={{ 
                 color: 'var(--card-text)',
@@ -137,6 +137,18 @@ export default function HotelCard({ hotel }: HotelCardProps) {
               </p>
             )}
           </div>
+
+          {hotel.bookingUrl && (
+            <a
+              href={hotel.bookingUrl}
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              className="block w-full text-center py-2.5 px-4 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: 'var(--accent-orange)' }}
+            >
+              Check availability
+            </a>
+          )}
         </div>
 
         {/* Google Maps Embed - Fixed at bottom */}

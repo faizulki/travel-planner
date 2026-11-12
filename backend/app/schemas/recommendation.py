@@ -49,6 +49,7 @@ class RecommendationResponse(BaseModel):
     matched_hotels: List[HotelInfo] = Field(default_factory=list)
     total_results: int = 0
     message: Optional[str] = None
+    stay22_map_url: Optional[str] = None  # Stay22 map embed for the destination
     
 
 class ChatGPTParameterExtractionResponse(BaseModel):

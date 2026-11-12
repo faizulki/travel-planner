@@ -25,7 +25,17 @@ class Settings(BaseSettings):
     # Booking.com API settings
     booking_api_key: str = ""
     booking_api_url: str = "https://distribution-xml.booking.com/json"
-    
+
+    # Stay22 affiliate settings (https://dev.stay22.com/docs/allez)
+    # When stay22_aid is set, every recommended hotel's booking URL becomes a
+    # Stay22 Allez link so bookings are attributed to this affiliate account.
+    stay22_aid: str = "travelplannerbro"  # public affiliate ID; set "" to disable
+    stay22_provider: str = "roam"  # roam = Stay22 picks the best OTA per user
+    stay22_campaign: str = "travelplanner_chat"  # use "_" not "-" (Stay22 rule)
+    stay22_map_campaign: str = "travelplanner_map"
+    # Reserved for the Direct Travel API (live prices); not used yet.
+    stay22_api_key: str = ""
+
     @model_validator(mode='after')
     def parse_cors_origins(self) -> 'Settings':
         """Convert comma-separated string to list after validation"""

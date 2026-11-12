@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ChatPanel from '../components/ChatPanel';
 import HotelCard from '../components/HotelCard';
+import Stay22Map from '../components/Stay22Map';
 
 interface BlogPost {
   id: string;
@@ -127,6 +128,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [hotelError, setHotelError] = useState<string | null>(null);
+  const [stay22Map, setStay22Map] = useState<{ url: string; location: string | null } | null>(null);
   
   // Blog state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -272,6 +274,7 @@ export default function HomePage() {
     setHasSearched(true);
     setHotelError(null);
     setHotels([]);
+    setStay22Map(null);
     
     console.log('Sending request with user_demand:', message);
     
@@ -303,7 +306,14 @@ export default function HomePage() {
       
       // Map backend hotels to frontend format
       const mappedHotels = (data.matched_hotels || []).map(mapBackendHotelToFrontend);
-      
+
+      if (data.stay22_map_url) {
+        setStay22Map({
+          url: data.stay22_map_url,
+          location: data.extracted_parameters?.location ?? null,
+        });
+      }
+
       if (mappedHotels.length === 0) {
         setHotelError(data.message || 'No hotels found matching your criteria. Try adjusting your search.');
       } else {
@@ -444,6 +454,11 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Stay22 affiliate map for the searched destination (shown even with 0 matches) */}
+          {!isLoading && hasSearched && stay22Map && (
+            <Stay22Map src={stay22Map.url} location={stay22Map.location} />
           )}
 
           {/* Error State */}
