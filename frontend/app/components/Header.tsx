@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTheme } from './ThemeProvider';
+import brandLogo from './brand-logo.png';
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
@@ -64,14 +66,20 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/home" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-teal)' }}>
-              <span className="text-white font-bold text-xl">H</span>
-            </div>
-            <span 
-              className="text-xl font-semibold transition-colors"
+            <Image
+              src={brandLogo}
+              alt=""
+              width={40}
+              height={40}
+              priority
+              unoptimized
+              className="w-10 h-10 rounded-lg"
+            />
+            <span
+              className="text-xl font-bold tracking-tight transition-colors"
               style={{ color: 'var(--header-text)' }}
             >
-              Hotel Recommendations
+              TravelPlanner<span style={{ color: '#7cc0ff' }}>Bro</span>
             </span>
           </Link>
 

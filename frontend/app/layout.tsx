@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hotel Recommendations",
-  description: "Find your perfect hotel stay",
+  title: "TravelPlannerBro",
+  description: "AI travel planning, tailored to you.",
   other: {
     "fo-verify": "d9a7599f-c65c-4f9b-b46a-2e3be7e3e7c6",
   },
