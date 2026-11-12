@@ -83,3 +83,60 @@ jobs:
 
       - name: Build all images
         run: docker compose build backend frontend admin
+
+  deploy:
+    name: Deploy to production
+    # Only after every check above passes, and only for main (never PRs).
+    needs: [backend, web, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://travelplannerbro.com
+    # Never run two deploys at once; queue instead of cancelling mid-deploy.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Pull and restart on server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+          SHA: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            APP_DIR="$APP_DIR" SHA="$SHA" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          # Deploy exactly the commit that passed CI. Untracked files such as
+          # .env are left alone; local edits to tracked files are discarded.
+          git fetch --prune origin main
+          git reset --hard "$SHA"
+          docker compose up -d --build --remove-orphans
+          docker image prune -f
+          docker compose ps
+          REMOTE
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS https://travelplannerbro.com/health; then
+              echo; echo "Healthy"; exit 0
+            fi
+            sleep 6
+          done
+          echo "Site did not become healthy after deploy" >&2
+          exit 1

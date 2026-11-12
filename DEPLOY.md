@@ -40,6 +40,44 @@ docker compose up -d --build
 
 To use a different host port: `GATEWAY_PORT=8080 docker compose up -d --build`.
 
+## Automatic deploys (GitHub Actions)
+
+Every push to `main` runs CI (`.github/workflows/ci.yml`). If all checks pass,
+the `deploy` job SSHes into the server, checks out that exact commit and runs
+`docker compose up -d --build`, then verifies `https://travelplannerbro.com/health`.
+Pull requests run CI only — they never deploy.
+
+### One-time server setup
+
+```bash
+# On the server, as the deploy user (must be able to run docker):
+git clone https://github.com/faizulki/travel-planner.git /opt/travel-planner
+cd /opt/travel-planner && cp .env.example .env   # fill in secrets
+sudo usermod -aG docker "$USER"                   # if not root; re-login after
+
+# Create a dedicated key for GitHub Actions and authorize it:
+ssh-keygen -t ed25519 -N "" -C "github-actions-deploy" -f ~/gh_deploy_key
+cat ~/gh_deploy_key.pub >> ~/.ssh/authorized_keys
+cat ~/gh_deploy_key          # copy into the SSH_PRIVATE_KEY secret, then:
+rm ~/gh_deploy_key ~/gh_deploy_key.pub
+```
+
+### GitHub secrets
+
+Repo → Settings → Secrets and variables → Actions → *New repository secret*:
+
+| Secret            | Example                       |
+|-------------------|-------------------------------|
+| `SSH_HOST`        | `185.197.251.19`              |
+| `SSH_USER`        | `deploy` (or `root`)          |
+| `SSH_PRIVATE_KEY` | contents of `gh_deploy_key`   |
+| `APP_DIR`         | `/opt/travel-planner`         |
+| `SSH_PORT`        | optional, defaults to `22`    |
+
+App secrets (`OPENAI_API_KEY`, etc.) stay in the server's `.env`; they are not
+stored in GitHub. Optionally add required reviewers to the `production`
+environment (Settings → Environments) to approve each deploy manually.
+
 ## Common commands
 
 ```bash
